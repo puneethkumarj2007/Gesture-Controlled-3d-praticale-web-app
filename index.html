@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>WonderSnap - 3D Gesture-Controlled Holographic Experience</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="stylesheet" href="/src/style.css" />
+  </head>
+  <body>
+    <!-- 1. Mirrored Real Webcam Feed Background (Natural Lighting) -->
+    <video id="video-bg" playsinline muted autoplay></video>
+
+    <!-- 2. Cybernetic Hand Landmark & Golden Halo Overlay Canvas -->
+    <canvas id="landmark-canvas"></canvas>
+
+    <!-- Camera Permission Banner — shown when camera is not yet allowed -->
+    <div id="camera-banner" class="camera-banner hidden">
+      <span class="camera-banner-icon">📷</span>
+      <span class="camera-banner-msg">Show your <strong>real hand</strong> — allow camera access to enable live hand tracking</span>
+      <button id="camera-banner-btn" class="camera-banner-btn">Allow Camera</button>
+      <button id="camera-banner-dismiss" class="camera-banner-close">✕</button>
+    </div>
+
+    <!-- 3. Three.js 3D Particle Models Container -->
+    <div id="three-canvas-container"></div>
+
+    <!-- 4. Camera Shutter Flash Overlay -->
+    <div id="shutter-flash"></div>
+
+    <!-- 5. Toast Notification System -->
+    <div id="toast-container"></div>
+
+    <!-- 6. Glassmorphism HUD Interface -->
+    <div class="hud-layer">
+      <!-- Top Header Navigation -->
+      <header class="top-header">
+        <div class="glass-panel brand-capsule interactive">
+          <span class="brand-icon">✨</span>
+          <span class="brand-title">WonderSnap</span>
+        </div>
+
+        <!-- Technical Blueprint Header Banner (Matches User Reference Images) -->
+        <div class="blueprint-banner" id="blueprint-banner">
+          <span class="blueprint-bracket-l">[</span>
+          <h1 id="blueprint-title-text" class="blueprint-title-text">
+            AI HUMAN BODY PART SEGMENTATION &amp; ANATOMICAL MAPPING
+          </h1>
+          <span class="blueprint-bracket-r">]</span>
+        </div>
+
+        <div class="actions-capsule">
+          <button id="btn-camera" class="action-btn interactive" title="Access / Switch Webcam">
+            <span id="camera-icon">📷</span>
+            <span id="camera-text">Camera Active</span>
+          </button>
+
+          <button id="btn-toggle-hand" class="action-btn interactive" title="Toggle Camera Hand vs Virtual Cyber Hand">
+            <span id="hand-mode-icon">✋</span>
+            <span id="hand-mode-label">Hand: Auto</span>
+          </button>
+
+          <button id="btn-palette" class="action-btn interactive" title="Cycle Colors (Peace Sign ✌️)">
+            <span>🎨</span>
+            <span id="palette-name">Holo White</span>
+          </button>
+
+          <button id="btn-snapshot" class="action-btn btn-snap interactive" title="Capture Snapshot (Thumbs Up 👍)">
+            <span>📸</span>
+            <span>Snap</span>
+          </button>
+
+          <button id="btn-fullscreen" class="action-btn interactive" title="Toggle Fullscreen">
+            <span>⛶</span>
+          </button>
+
+          <div class="glass-panel perf-badge interactive">
+            <span id="fps-value">60 FPS</span> • 16.4K Pts
+          </div>
+        </div>
+      </header>
+
+      <!-- Blueprint HUD Corner Accents -->
+      <div class="hud-corner hud-top-right">
+        <div class="hud-tech-box">
+          <span class="hud-cam-icon">📹</span>
+          <span class="hud-tech-label">zoomed-in</span>
+          <div class="hud-bracket-tl"></div>
+          <div class="hud-bracket-br"></div>
+        </div>
+      </div>
+
+      <div class="hud-corner hud-bottom-left">
+        <div class="hud-axis-widget">
+          <div class="axis-line axis-y"><span class="axis-lbl">Y</span></div>
+          <div class="axis-line axis-x"><span class="axis-lbl">X</span></div>
+          <div class="axis-line axis-z"><span class="axis-lbl">Z</span></div>
+        </div>
+      </div>
+
+      <div class="hud-corner hud-bottom-right">
+        <div class="hud-tech-box">
+          <span class="hud-tech-label">REF // 0048.91</span>
+          <div class="hud-bracket-tl"></div>
+          <div class="hud-bracket-br"></div>
+        </div>
+      </div>
+
+      <!-- Center & Sidebar Interactive Area -->
+      <div class="center-hud">
+        <!-- Left Glassmorphic Inspector Card (Matching Reference Image) -->
+        <aside class="glass-panel inspector-card interactive" id="inspector-card" aria-label="Model Inspector & Gesture Guide">
+          <div class="inspector-category-row">
+            <span id="model-category" class="category-pill">ANATOMY &amp; BIOMECHANICS</span>
+            <div style="display:flex; align-items:center; gap:8px;">
+              <span class="status-pill-live">● 3D SEGMENTATION</span>
+              <button id="btn-toggle-inspector" class="inspector-toggle-btn" title="Toggle Inspector">◀</button>
+            </div>
+          </div>
+
+          <h2 id="model-title" class="model-title-text">Human Musculoskeletal &amp; Organs</h2>
+          <p id="model-desc" class="model-desc-text">AI part segmentation &amp; anatomical mapping: articulated skeleton, muscular groups &amp; beating heart</p>
+
+          <!-- Status Telemetry Bars -->
+          <div class="telemetry-section">
+            <div class="telemetry-item">
+              <div class="telemetry-label">
+                <span>PARTICLES</span>
+                <span id="telemetry-particles-val">98%</span>
+              </div>
+              <div class="telemetry-bar">
+                <div class="telemetry-fill fill-cyan" style="width: 98%;"></div>
+              </div>
+            </div>
+
+            <div class="telemetry-item">
+              <div class="telemetry-label">
+                <span>HAND TRACKING</span>
+                <span id="telemetry-tracking-val">96%</span>
+              </div>
+              <div class="telemetry-bar">
+                <div id="tracking-fill-bar" class="telemetry-fill fill-gold" style="width: 96%;"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Gesture Instructions List -->
+          <div class="gesture-instructions">
+            <div class="instruction-row" data-gesture="open-palm">
+              <span class="instruction-icon">💥</span>
+              <div class="instruction-text">
+                <span class="inst-cmd">Open Palm</span>
+                <span class="inst-desc">-- explode it, see inside</span>
+              </div>
+            </div>
+
+            <div class="instruction-row" data-gesture="fist">
+              <span class="instruction-icon">✊</span>
+              <div class="instruction-text">
+                <span class="inst-cmd">Fist</span>
+                <span class="inst-desc">-- pull it together / assemble</span>
+              </div>
+            </div>
+
+            <div class="instruction-row" data-gesture="tracking">
+              <span class="instruction-icon">🖐️</span>
+              <div class="instruction-text">
+                <span class="inst-cmd">Wave / Twist hand</span>
+                <span class="inst-desc">-- rotate & tilt 3D model</span>
+              </div>
+            </div>
+
+            <div class="instruction-row" data-gesture="pinch">
+              <span class="instruction-icon">🤏</span>
+              <div class="instruction-text">
+                <span class="inst-cmd">Pinch</span>
+                <span class="inst-desc">-- zoom & pull particles</span>
+              </div>
+            </div>
+
+            <div class="instruction-row" data-gesture="two-hands">
+              <span class="instruction-icon">👐</span>
+              <div class="instruction-text">
+                <span class="inst-cmd">Two Hands</span>
+                <span class="inst-desc">-- stretch & expand field</span>
+              </div>
+            </div>
+
+            <div class="instruction-row" data-gesture="peace">
+              <span class="instruction-icon">✌️</span>
+              <div class="instruction-text">
+                <span class="inst-cmd">Peace Sign</span>
+                <span class="inst-desc">-- jump to next 3D model</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Quick Action Buttons -->
+          <div class="inspector-actions">
+            <button id="btn-action-explode" class="quick-btn" title="Explode View">💥 Explode</button>
+            <button id="btn-action-assemble" class="quick-btn" title="Assemble Core">✊ Assemble</button>
+            <button id="btn-action-reset" class="quick-btn" title="Reset Camera">🔄 Reset</button>
+            <button id="btn-action-next" class="quick-btn btn-highlight" title="Next Model">➡️ Next</button>
+          </div>
+        </aside>
+      </div>
+
+      <!-- Bottom Dock: 3D Model Switcher Bar (Matching Reference Image) -->
+      <footer class="bottom-hud">
+        <nav class="glass-panel models-dock interactive" aria-label="3D Model Switcher">
+          <button class="dock-pill-btn active" data-model="human" title="AI Human Body Part Segmentation & Anatomical Mapping">
+            <span class="dock-icon">🧬</span>
+            <span class="dock-title">Human Anatomy</span>
+          </button>
+
+          <button class="dock-pill-btn" data-model="bike" title="AI Vehicle Part Segmentation - Royal Enfield">
+            <span class="dock-icon">🏍️</span>
+            <span class="dock-title">Royal Enfield</span>
+          </button>
+
+          <button class="dock-pill-btn" data-model="car" title="AI Vehicle Part Segmentation - BMW M4 Competition">
+            <span class="dock-icon">🏎️</span>
+            <span class="dock-title">BMW M4 Coupe</span>
+          </button>
+
+          <button class="dock-pill-btn" data-model="plane" title="AI Aircraft Part Segmentation & Aerodynamic Mapping">
+            <span class="dock-icon">✈️</span>
+            <span class="dock-title">Airliner A320</span>
+          </button>
+        </nav>
+      </footer>
+    </div>
+
+    <!-- 7. Initial Loading Screen -->
+    <div id="app-loader">
+      <div class="loader-spinner-wrapper">
+        <div class="loader-ring"></div>
+        <div class="loader-core">✨</div>
+      </div>
+      <div class="loader-text">WONDERSNAP</div>
+      <div id="loader-status" class="loader-status">Generating 3D Particle Models & AI Vision...</div>
+    </div>
+
+    <!-- 8. Graceful Camera Access Modal -->
+    <div id="error-modal" class="modal-overlay hidden">
+      <div class="glass-panel modal-card interactive">
+        <div class="modal-icon">📷</div>
+        <h2 class="modal-title">Enable Webcam Access</h2>
+        <p id="error-message" class="modal-desc">
+          Click the button below to grant camera access so WonderSnap can track your hand gestures in real time. If blocked by browser settings, click the camera icon in your address bar to allow.
+        </p>
+        <div class="modal-actions">
+          <button id="btn-retry-camera" class="btn-primary">Allow Camera Access</button>
+          <button id="btn-use-fallback" class="btn-secondary">Use Virtual Cyber Hand</button>
+        </div>
+      </div>
+    </div>
+
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
